@@ -1,0 +1,46 @@
+# base-image for node on any machine using a template variable,
+# see more about dockerfile templates here: http://docs.resin.io/deployment/docker-templates/
+# and about resin base images here: http://docs.resin.io/runtime/resin-base-images/
+FROM resin/rpi-raspbian
+
+# Install dependencies
+RUN apt-get update \
+	&& apt-get install -yq \
+	build-essential python \
+	&& apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install node.js
+RUN curl -SLO "https://nodejs.org/dist/v8.9.1/node-v8.9.1-linux-armv7l.tar.xz" \
+	&& tar xvfJ node-v8.9.1-linux-armv7l.tar.xz \
+	&& rm node-v8.9.1-linux-armv7l.tar.xz \
+  && mv node-v8.9.1-linux-armv7l /opt
+
+# Configure node.js
+RUN update-alternatives --install "/usr/bin/node" "node" "/opt/node-v8.9.1-linux-armv7l/bin/node" 1
+RUN update-alternatives --set node /opt/node-v8.9.1-linux-armv7l/bin/node
+RUN update-alternatives --install "/usr/bin/npm" "npm" "/opt/node-v8.9.1-linux-armv7l/bin/npm" 1
+
+# Defines our working directory in container
+WORKDIR /usr/src/app
+
+# Copies the package.json first for better cache on later pushes
+COPY package.json package.json
+
+# Install BCM2835 library
+COPY install-bcm-lib.sh install-bcm-lib.sh
+RUN ["chmod", "+x", "/usr/src/app/install-bcm-lib.sh"]
+RUN ./install-bcm-lib.sh
+
+# This install npm dependencies on the resin.io build server,
+# making sure to clean up the artifacts it creates in order to reduce the image size.
+# && npm cache clean && rm -rf /tmp/*
+RUN JOBS=MAX npm install --production --unsafe-perm
+
+# This will copy all files in our root to the working  directory in the container
+COPY . ./
+
+# Enable systemd init system in container
+ENV INITSYSTEM on
+
+# server.js will run when container starts up on the device
+CMD ["npm", "start"]

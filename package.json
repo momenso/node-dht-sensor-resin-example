@@ -1,0 +1,24 @@
+{
+  "name": "node-dht-sensor-resin-example",
+  "version": "1.0.0",
+  "description": "A simple node-dht-sensor web server on resin.io",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/resin-io-projects/simple-server-node.git"
+  },
+  "keywords": [
+    "resin.io",
+    "node-dht-sensor"
+  ],
+  "author": "David Momenso <momenso@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "express": "*",
+    "node-dht-sensor": "0.0.33"
+  }
+}
